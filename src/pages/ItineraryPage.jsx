@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const imageBase = "https://images.unsplash.com";
 
@@ -10,76 +10,135 @@ const colorThemes = {
   sky: { primary: "from-sky-500 to-cyan-600", solid: "bg-sky-600", light: "bg-sky-50", text: "text-sky-600", border: "border-sky-100" },
 };
 
-const tourMegaMenu = [
-  { title: "Popular Tours", items: [["Golden Triangle", "Delhi, Agra, Jaipur", `${imageBase}/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=220&q=80`], ["Kashmir Tour", "Srinagar, Gulmarg, Pahalgam", `${imageBase}/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=220&q=80`], ["Kerala Tour", "Munnar, Alleppey, Kochi", `${imageBase}/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=220&q=80`], ["Rajasthan Tour", "Jaipur, Jodhpur, Udaipur", `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=220&q=80`]] },
-  { title: "Tour Themes", items: [["Family Holidays", "Safe & comfortable plans", `${imageBase}/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=220&q=80`], ["Honeymoon Tours", "Private romantic stays", `${imageBase}/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=220&q=80`], ["Festival Tours", "Holi, Diwali, Janmashtami", `${imageBase}/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=220&q=80`], ["Wildlife Tours", "Safari & jungle lodges", `${imageBase}/photo-1561731216-c3a4d99437d5?auto=format&fit=crop&w=220&q=80`]] },
-  { title: "India Zones", items: [["North India", "Delhi, Agra, Kashmir", `${imageBase}/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=220&q=80`], ["South India", "Kerala, Tamil Nadu", `${imageBase}/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=220&q=80`], ["West India", "Rajasthan, Goa, Gujarat", `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=220&q=80`], ["North East", "Assam, Meghalaya, Sikkim", `${imageBase}/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=220&q=80`]] },
+const megaCols = [
+  { title: "Holiday Packages", items: [["Kashmir Tours", "Snow valleys & family holidays", `${imageBase}/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=220&q=80`], ["Kerala Tours", "Backwaters, hills & Ayurveda", `${imageBase}/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=220&q=80`], ["Rajasthan Tours", "Palaces, deserts & heritage", `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=220&q=80`], ["Goa Tours", "Beach stays & nightlife", `${imageBase}/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=220&q=80`]] },
+  { title: "Travel Themes", items: [["Family Holidays", "Safe tours for all ages", `${imageBase}/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=220&q=80`], ["Honeymoon Trips", "Private romantic escapes", `${imageBase}/photo-1522673607200-164d1b6ce486?auto=format&fit=crop&w=220&q=80`], ["Pilgrimage Tours", "Temples and holy cities", `${imageBase}/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=220&q=80`], ["Wildlife Safaris", "Tiger reserves & jungles", `${imageBase}/photo-1549366021-9f761d040a94?auto=format&fit=crop&w=220&q=80`]] },
+  { title: "India Zones", items: [["North India", "Kashmir, Himachal, Agra", `${imageBase}/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=220&q=80`], ["South India", "Kerala, Tamil Nadu", `${imageBase}/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=220&q=80`], ["West India", "Rajasthan, Gujarat, Goa", `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=220&q=80`], ["North East", "Assam, Meghalaya, Sikkim", `${imageBase}/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=220&q=80`]] },
 ];
 
-const itineraryDays = [
-  { day: "Day 01", title: "Arrival in Delhi — Welcome to India", location: "Delhi", meals: "Dinner", stay: "4 Star Hotel in Delhi", drive: "Airport transfer", image: `${imageBase}/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=900&q=80`, details: "Meet our representative at Delhi airport or railway station. Complete hotel check-in and start with India Gate, Qutub Minar, Lotus Temple and Connaught Place. Evening free for local markets and food experiences." },
-  { day: "Day 02", title: "Delhi to Agra — Taj Mahal & Agra Fort", location: "Agra", meals: "Breakfast", stay: "Heritage Hotel in Agra", drive: "Approx 4 hrs", image: `${imageBase}/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=900&q=80`, details: "Drive to Agra via Yamuna Expressway. Visit the Taj Mahal, Agra Fort and Mehtab Bagh during sunset. Explore marble handicrafts and local Mughlai food options in the evening." },
-  { day: "Day 03", title: "Agra to Jaipur via Fatehpur Sikri", location: "Jaipur", meals: "Breakfast", stay: "Boutique Hotel in Jaipur", drive: "Approx 5 hrs", image: `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=900&q=80`, details: "After breakfast, proceed to Jaipur with an en-route visit to Fatehpur Sikri. Reach Jaipur by evening, check in and enjoy leisure time around the Pink City markets." },
-  { day: "Day 04", title: "Jaipur Sightseeing — Forts, Palaces & Culture", location: "Jaipur", meals: "Breakfast", stay: "Boutique Hotel in Jaipur", drive: "Local sightseeing", image: `${imageBase}/photo-1599661046827-dacde6976549?auto=format&fit=crop&w=900&q=80`, details: "Visit Amber Fort, City Palace, Jantar Mantar, Hawa Mahal and Jal Mahal photo stop. Evening reserved for shopping, traditional food and optional cultural dinner." },
-  { day: "Day 05", title: "Jaipur to Delhi — Departure", location: "Delhi", meals: "Breakfast", stay: "Not included", drive: "Approx 5 hrs", image: `${imageBase}/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=80`, details: "After breakfast, drive back to Delhi. Drop at airport, railway station or hotel with beautiful memories of your Golden Triangle India tour." },
+const overview = [
+  ["Duration", "6 Days / 5 Nights", "fa-clock"],
+  ["Route", "Delhi • Agra • Jaipur", "fa-route"],
+  ["Best Time", "Oct to Mar", "fa-calendar-days"],
+  ["Tour Type", "Private Guided Tour", "fa-user-group"],
+  ["Pickup", "Delhi Airport / Hotel", "fa-car-side"],
+  ["Language", "English / Hindi", "fa-language"],
 ];
 
-const inclusions = ["Private AC vehicle for complete tour", "Hotel accommodation with breakfast", "Driver allowance, toll tax and parking", "Local sightseeing as per itinerary", "24/7 travel support during trip", "Customizable day-wise itinerary"];
-const exclusions = ["Flight or train tickets", "Monument entry tickets", "Lunch, dinner and personal expenses", "Guide charges unless added", "Camera fee or adventure activity cost", "Anything not mentioned in inclusions"];
-
-const hotels = [
-  ["Delhi", "The Metropolitan Style Hotel", "4 Star", `${imageBase}/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80`],
-  ["Agra", "Heritage Boutique Stay", "4 Star", `${imageBase}/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=600&q=80`],
-  ["Jaipur", "Royal Haveli Experience", "Heritage", `${imageBase}/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=600&q=80`],
+const highlights = [
+  ["Private AC cab with professional driver", "fa-car-side"],
+  ["Guided Taj Mahal sunrise visit in Agra", "fa-camera-retro"],
+  ["Amber Fort, City Palace and Hawa Mahal sightseeing", "fa-landmark"],
+  ["Handpicked hotels with breakfast options", "fa-hotel"],
+  ["Flexible itinerary with shopping and local food stops", "fa-bag-shopping"],
+  ["24/7 trip assistance through phone and WhatsApp", "fa-headset"],
 ];
+
+const itinerary = [
+  {
+    day: "Day 01",
+    title: "Arrival in Delhi & Local Sightseeing",
+    text: "Arrive in Delhi and meet your private driver at airport, railway station or hotel. Start the tour with India Gate, Parliament House drive-pass, Humayun’s Tomb, Qutub Minar and Lotus Temple depending on arrival time. Evening is free for rest or local market exploration.",
+    stay: "Hotel The Grand Delhi or Similar",
+    meal: "CP Plan"
+  },
+  {
+    day: "Day 02",
+    title: "Delhi to Agra via Expressway",
+    text: "After breakfast, drive to Agra by Yamuna Expressway. Check in at hotel and visit Agra Fort, Mehtab Bagh and local marble handicraft markets. The evening view of the Taj Mahal from the riverside is a beautiful photography moment.",
+    stay: "Hotel Clarks Shiraz Agra or Similar",
+    meal: "CP Plan"
+  },
+  {
+    day: "Day 03",
+    title: "Taj Mahal Sunrise & Agra to Jaipur",
+    text: "Visit Taj Mahal early morning for sunrise. Return to hotel for breakfast and later drive towards Jaipur. On the way, visit Fatehpur Sikri or Abhaneri Stepwell if time permits. Check in at Jaipur hotel and relax.",
+    stay: "Hotel Royal Orchid Jaipur or Similar",
+    meal: "CP Plan"
+  },
+  {
+    day: "Day 04",
+    title: "Jaipur Forts, Palaces & Heritage Tour",
+    text: "Explore Amber Fort, Jal Mahal, City Palace, Jantar Mantar, Hawa Mahal and local bazaars. Jaipur is famous for gemstones, textiles, handicrafts and traditional Rajasthani food. Optional cultural dinner can be arranged in the evening.",
+    stay: "Hotel Royal Orchid Jaipur or Similar",
+    meal: "CP Plan"
+  },
+  {
+    day: "Day 05",
+    title: "Jaipur Leisure, Optional Experiences & Drive to Delhi",
+    text: "Spend the morning at leisure or choose optional experiences such as Nahargarh Fort, Patrika Gate, elephant village visit or shopping. Later drive back to Delhi and check in at hotel for overnight stay.",
+    stay: "Hotel The Grand Delhi or Similar",
+    meal: "CP Plan"
+  },
+  {
+    day: "Day 06",
+    title: "Departure from Delhi",
+    text: "After breakfast, our driver will drop you at Delhi Airport, railway station or your preferred location. Tour ends with beautiful memories of India’s Golden Triangle journey.",
+    stay: "Checkout",
+    meal: "Breakfast Included"
+  },
+];
+
+const inclusions = ["Private air-conditioned cab", "Driver allowance, fuel and tolls", "Hotel pickup and drop", "Sightseeing as per itinerary", "Parking and state tax", "24/7 travel support"];
+const exclusions = ["Monument entry tickets", "Lunch and dinner", "Camera/video fees", "Personal expenses", "Guide charges unless added", "Anything not mentioned in inclusions"];
+const notes = ["Taj Mahal remains closed every Friday.", "Hotel check-in and check-out depend on hotel policy.", "Rates may change during festival dates and long weekends.", "Itinerary can be customized as per arrival time, hotel category and travel style."];
+const terms = ["Booking confirmation requires advance payment as per package policy.", "Cancellation charges may apply depending on cancellation date and hotel rules.", "No refund for unused sightseeing, meals or transfers after tour starts.", "Vehicle will be used only as per itinerary and permitted travel route."];
 
 const gallery = [
   `${imageBase}/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=500&q=80`,
   `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=500&q=80`,
-  `${imageBase}/photo-1587474260584-136574528ed5?auto=format&fit=crop&w=500&q=80`,
   `${imageBase}/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=500&q=80`,
-  `${imageBase}/photo-1599661046827-dacde6976549?auto=format&fit=crop&w=500&q=80`,
+  `${imageBase}/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=500&q=80`,
+  `${imageBase}/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=500&q=80`,
   `${imageBase}/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=500&q=80`,
 ];
 
-const tourHighlights = [
-  ["Private Golden Triangle route", "Delhi, Agra and Jaipur covered in one smooth journey", "🏛️"],
-  ["Taj Mahal timing support", "Early morning or flexible Taj Mahal visit planning", "🌅"],
-  ["AC vehicle with driver", "Clean private cab with experienced route driver", "🚘"],
-  ["Handpicked hotel stays", "Comfortable hotels with breakfast and verified locations", "🏨"],
-  ["Flexible local time", "Shopping, food and cultural stops can be adjusted", "🛍️"],
-  ["Live travel assistance", "Phone and WhatsApp support during the complete trip", "📞"],
-];
-
-const routeStops = ["Delhi", "Agra", "Fatehpur Sikri", "Jaipur", "Delhi"];
-
-const terms = [
-  "Package price is based on minimum 2 travellers and selected hotel category.",
-  "Monument tickets, guide fee and meals not mentioned in inclusions are extra.",
-  "Hotel rooms are subject to availability at the time of booking confirmation.",
-  "Cancellation and refund policy will be shared before final booking confirmation.",
-  "Itinerary can be modified due to weather, traffic, local rules or operational reasons.",
+const similarTours = [
+  ["Golden Triangle with Varanasi", "8 Days / 7 Nights", "₹24,999", `${imageBase}/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=500&q=80`],
+  ["Delhi Agra Jaipur Tour", "5 Days / 4 Nights", "₹18,999", `${imageBase}/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=500&q=80`],
+  ["Rajasthan Heritage Tour", "7 Days / 6 Nights", "₹22,999", `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=500&q=80`],
 ];
 
 const reviews = [
-  ["Amit Sharma", "Delhi", "The itinerary was perfectly planned. Taj Mahal sunrise and Jaipur sightseeing were the best parts of our family trip.", "4.9", `${imageBase}/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80`],
-  ["Priya Mehta", "Mumbai", "Hotels, driver and support were excellent. We changed our plan midway and the team handled it smoothly.", "5.0", `${imageBase}/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80`],
-  ["Rohit & Neha", "Bengaluru", "Very comfortable Golden Triangle tour. The route was not rushed and the booking team was always available on WhatsApp.", "4.8", `${imageBase}/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=160&q=80`],
+  ["Neha Sharma", "Delhi", "A very smooth and well-managed tour. Driver was polite, hotels were clean and the itinerary was comfortable for family travel."],
+  ["Rahul Verma", "Mumbai", "The Golden Triangle experience was excellent. Taj Mahal sunrise and Jaipur sightseeing were the best parts of the trip."],
+  ["Amit & Priya", "Bengaluru", "Everything was planned properly. The team was responsive on WhatsApp throughout the journey."],
 ];
 
-const blogs = [
-  ["Best Time to Visit Delhi Agra Jaipur", "Plan your Golden Triangle tour with ideal weather, festivals and travel tips.", "6 min read", `${imageBase}/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=500&q=80`],
-  ["Taj Mahal Travel Guide for First-Time Visitors", "Timings, entry tips, photography points and common mistakes to avoid.", "8 min read", `${imageBase}/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=500&q=80`],
-  ["Jaipur Sightseeing Places You Should Not Miss", "A simple guide to forts, palaces, markets and cultural experiences in Jaipur.", "7 min read", `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=500&q=80`],
+const tags = ["Golden Triangle Tour", "Delhi Agra Jaipur", "Family Tour", "Private Cab Tour", "Taj Mahal Tour", "Rajasthan Tour", "India Tour Package"];
+
+const pageSectionLinks = [
+  ["Tour Overview", "#tour-overview", "fa-map-location-dot"],
+  ["Highlights", "#tour-highlights", "fa-medal"],
+  ["Inclusions", "#inclusions", "fa-circle-check"],
+  ["Exclusions", "#exclusions", "fa-circle-xmark"],
+  ["Notes", "#important-notes", "fa-circle-info"],
+  ["Terms", "#terms-conditions", "fa-file-contract"],
+  ["Gallery", "#traveller-gallery", "fa-images"],
+  ["Reviews", "#traveller-reviews", "fa-star-half-stroke"],
 ];
 
-const faqs = [
-  ["Can I customize this itinerary?", "Yes, hotels, duration, sightseeing, vehicle type and route can be customized as per your budget and travel style."],
-  ["Is this tour suitable for family travellers?", "Yes, this itinerary is designed for families, couples, senior citizens and small groups with comfortable travel timing."],
-  ["Are monument tickets included?", "No, monument tickets are normally paid directly by travellers. They can be added on request."],
-  ["Which vehicle will be provided?", "Vehicle depends on group size. Sedan, SUV, Innova Crysta, Tempo Traveller or coach can be arranged."],
-  ["How do I confirm booking?", "Submit the enquiry form or chat with our team. After final quotation, booking can be confirmed with advance payment."],
+const topSellingGoldenTriangleTours = [
+  ["Golden Triangle with Varanasi", "8 Days / 7 Nights", "Delhi • Agra • Jaipur • Varanasi", "₹24,999", "4.9", `${imageBase}/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=420&q=80`],
+  ["Classic Delhi Agra Jaipur", "5 Days / 4 Nights", "Delhi • Agra • Jaipur", "₹18,999", "4.8", `${imageBase}/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=420&q=80`],
+  ["Golden Triangle with Pushkar", "7 Days / 6 Nights", "Delhi • Agra • Jaipur • Pushkar", "₹22,499", "4.7", `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=420&q=80`],
+  ["Luxury Golden Triangle Tour", "6 Days / 5 Nights", "5 Star Hotels • Private Cab", "₹39,999", "4.9", `${imageBase}/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=420&q=80`],
+  ["Golden Triangle Wildlife Tour", "8 Days / 7 Nights", "Jaipur • Ranthambore • Agra", "₹31,999", "4.8", `${imageBase}/photo-1549366021-9f761d040a94?auto=format&fit=crop&w=420&q=80`],
 ];
+
+function SectionTitle({ title, subtitle, activeTheme, icon = "fa-route" }) {
+  return (
+    <div className="mb-5 flex items-start gap-3">
+      <span className={`mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-white shadow-sm ${activeTheme.text}`}>
+        <i className={`fa-solid ${icon} text-[16px]`} />
+      </span>
+      <div>
+        {subtitle ? <p className={`text-[11px] font-medium uppercase tracking-[0.22em] ${activeTheme.text}`}>{subtitle}</p> : null}
+        <h2 className="mt-1 text-[24px] font-semibold tracking-[-0.035em] text-slate-950 md:text-[28px]">{title}</h2>
+      </div>
+    </div>
+  );
+}
 
 function MegaMenu({ columns, activeTheme }) {
   return (
@@ -87,12 +146,12 @@ function MegaMenu({ columns, activeTheme }) {
       <div className="grid grid-cols-3 gap-5">
         {columns.map((col) => (
           <div key={col.title}>
-            <h3 className={`mb-3 text-[13px] font-black uppercase tracking-[0.14em] ${activeTheme.text}`}>{col.title}</h3>
+            <h3 className={`mb-3 text-[12px] font-medium uppercase tracking-[0.16em] ${activeTheme.text}`}>{col.title}</h3>
             <div className="space-y-3">
               {col.items.map(([name, desc, img]) => (
                 <a key={name} href="#" className="flex gap-3 rounded-xl p-2 transition hover:bg-slate-50">
                   <img src={img} alt={name} className="h-14 w-16 rounded-lg object-cover" />
-                  <span><b className="block text-[13px] font-black text-slate-950">{name}</b><small className="text-[12px] font-semibold text-slate-500">{desc}</small></span>
+                  <span><b className="block text-[13px] font-medium text-slate-950">{name}</b><small className="text-[12px] font-normal text-slate-500">{desc}</small></span>
                 </a>
               ))}
             </div>
@@ -100,327 +159,436 @@ function MegaMenu({ columns, activeTheme }) {
         ))}
       </div>
       <div className={`mt-5 rounded-xl bg-gradient-to-r ${activeTheme.primary} p-4 text-white`}>
-        <b className="text-[16px]">Need custom itinerary?</b>
-        <span className="ml-3 text-[13px] font-semibold text-white/85">Share your date, budget and destination to get a personalized plan.</span>
-        <a href="#enquiry" className="float-right rounded-lg bg-white px-4 py-2 text-[12px] font-black text-slate-900">Plan Now</a>
+        <b className="text-[15px] font-medium">Need a custom India tour?</b>
+        <span className="ml-3 text-[13px] font-normal text-white/85">Share date, budget and destination. Our expert will create a plan.</span>
+        <a href="#enquiry" className="float-right rounded-lg bg-white px-4 py-2 text-[12px] font-medium text-slate-700">Plan Now</a>
       </div>
     </div>
   );
 }
 
-function SectionTitle({ eyebrow, title, text, activeTheme }) {
+function Header({ activeTheme }) {
   return (
-    <div className="mb-6">
-      {eyebrow ? <p className={`mb-1 text-[12px] font-black uppercase tracking-[0.2em] ${activeTheme.text}`}>{eyebrow}</p> : null}
-      <h2 className="text-[28px] font-black tracking-[-0.04em] text-slate-950 md:text-[34px]">{title}</h2>
-      {text ? <p className="mt-2 max-w-3xl text-[15px] font-medium leading-7 text-slate-600">{text}</p> : null}
-    </div>
+    <>
+      <div className="border-b border-slate-100 bg-white">
+        <div className="mx-auto flex max-w-[1380px] items-center justify-between px-5 py-2 text-[12px] font-normal text-slate-500">
+          <div className="flex items-center gap-5"><a href="tel:18001234567" className="text-slate-600 hover:text-slate-900">☎ Toll Free: <b className="font-medium text-slate-700">1800-123-4567</b></a><span className="hidden sm:inline-flex">🎧 24/7 Support</span><a href="mailto:hello@mustindiatravel.com" className="hidden text-slate-600 hover:text-slate-900 md:inline-flex">✉ hello@mustindiatravel.com</a></div>
+          <div className="hidden items-center gap-5 md:flex"><a href="#">Offers</a><a href="#">Travel Guide</a><a href="#">Contact Us</a><button>INR⌄</button><a href="#">Login / Sign Up</a></div>
+        </div>
+      </div>
+      <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/90 shadow-sm backdrop-blur-xl">
+        <div className="mx-auto flex max-w-[1380px] items-center justify-between px-5 py-4">
+          <a href="#" className="flex items-center gap-2"><span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-orange-500 via-sky-500 to-indigo-600 text-white">📍</span><span className="leading-[0.95]"><b className="block text-[20px] font-semibold text-indigo-700">Must India</b><b className="block text-[20px] font-semibold text-indigo-700">Travel</b></span></a>
+          <nav className="relative hidden items-center gap-9 text-[13px] font-normal text-slate-600 lg:flex">
+            {["Explore Tours", "Destinations", "Themes", "India Zones", "Festival Tours"].map((m) => <div key={m} className="group relative py-3"><a href="#" className="text-slate-600 hover:text-slate-950">{m}⌄</a><MegaMenu columns={megaCols} activeTheme={activeTheme} /></div>)}
+            <a href="#" className="py-3 text-slate-600 hover:text-slate-950">Top Deals</a><a href="#" className="py-3 text-slate-600 hover:text-slate-950">Blog</a>
+          </nav>
+          <a href="#enquiry" className={`rounded-full bg-gradient-to-r ${activeTheme.primary} px-6 py-3 text-[13px] font-medium text-white shadow-lg`}>Plan My Trip</a>
+        </div>
+      </header>
+    </>
+  );
+}
+
+function SectionScrollNav({ activeTheme }) {
+  return (
+    <section className="sticky top-[74px] z-40 border-y border-slate-200 bg-white/95 backdrop-blur-xl">
+      <div className="mx-auto max-w-[1380px] px-4 py-3 md:px-5">
+        <div className="flex gap-2 overflow-x-auto scroll-smooth pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          {pageSectionLinks.map(([label, href, icon]) => (
+            <a
+              key={href}
+              href={href}
+              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-[12px] font-medium text-slate-600 shadow-sm transition hover:bg-white hover:text-slate-950"
+            >
+              <i className={`fa-solid ${icon} ${activeTheme.text} text-[12px]`} />
+              {label}
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function EnquirySidebar({ activeTheme }) {
+  return (
+    <aside id="enquiry" className="sticky top-24 space-y-4 self-start">
+      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_14px_45px_rgba(15,23,42,0.07)]">
+        <p className={`text-[11px] font-medium uppercase tracking-[0.22em] ${activeTheme.text}`}>Quick Enquiry</p>
+        <h3 className="mt-1 flex items-center gap-2 text-[22px] font-semibold tracking-[-0.035em] text-slate-950"><i className="fa-solid fa-paper-plane text-[18px] text-slate-500" />Get Custom Quote</h3>
+        <form className="mt-4 space-y-3">
+          {["Full Name", "Email Address", "Mobile / WhatsApp Number", "Arrival Date", "Number of Pax"].map((p) => <input key={p} placeholder={p} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] outline-none focus:border-slate-300" />)}
+          <select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] outline-none"><option>Hotel Category</option><option>Budget</option><option>3 Star</option><option>4 Star</option><option>5 Star Luxury</option></select>
+          <textarea placeholder="Message / Special Requirement" rows={4} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] outline-none" />
+          <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"><span className="rounded-lg bg-white px-3 py-2 text-[13px] font-semibold text-slate-700 shadow-sm">8 + 3 =</span><input placeholder="Captcha" className="min-w-0 flex-1 bg-transparent text-[13px] outline-none" /></div>
+          <button type="button" className={`w-full rounded-xl bg-gradient-to-r ${activeTheme.primary} px-5 py-3.5 text-[13px] font-medium text-white shadow-lg`}>Submit Enquiry</button>
+        </form>
+      </div>
+
+      <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+        <h3 className="flex items-center gap-2 text-[17px] font-semibold text-slate-950"><i className="fa-solid fa-headset text-slate-500" />Need instant help?</h3>
+        <div className="mt-4 space-y-3 text-[13px] text-slate-600">
+          <a href="tel:18001234567" className="flex items-center gap-3 rounded-xl bg-slate-50 p-3"><i className="fa-solid fa-phone text-slate-500" />1800-123-4567</a>
+          <a href="mailto:hello@mustindiatravel.com" className="flex items-center gap-3 rounded-xl bg-slate-50 p-3"><i className="fa-solid fa-envelope text-slate-500" />hello@mustindiatravel.com</a>
+          <a href="https://wa.me/919999999999" className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-[13px] font-medium text-white"><i className="fa-brands fa-whatsapp" /> Book on WhatsApp</a>
+          <button type="button" className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[13px] font-medium text-slate-700"><i className="fa-solid fa-file-pdf text-slate-500" /> Download Itinerary PDF</button>
+        </div>
+      </div>
+
+      <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-[0_14px_45px_rgba(15,23,42,0.07)]">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <p className={`text-[11px] font-medium uppercase tracking-[0.22em] ${activeTheme.text}`}>Top Selling</p>
+            <h3 className="mt-1 text-[19px] font-semibold tracking-[-0.035em] text-slate-950">Golden Triangle Tours</h3>
+          </div>
+          <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-2xl ${activeTheme.light} ${activeTheme.text}`}>
+            <i className="fa-solid fa-fire-flame-curved text-[16px]" />
+          </span>
+        </div>
+
+        <div className="space-y-3">
+          {topSellingGoldenTriangleTours.map(([title, duration, route, price, rating, image]) => (
+            <a key={title} href="#" className="group flex gap-3 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_14px_35px_rgba(15,23,42,0.08)]">
+              <div className="relative h-[86px] w-[105px] shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                <img src={image} alt={title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                <span className="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-amber-600 shadow-sm">
+                  <i className="fa-solid fa-star mr-1 text-[9px]" />{rating}
+                </span>
+              </div>
+
+              <div className="min-w-0 flex-1 py-1">
+                <h4 className="line-clamp-2 text-[13px] font-semibold leading-snug text-slate-950">{title}</h4>
+                <p className="mt-1 flex items-center gap-1.5 text-[11px] font-normal text-slate-500">
+                  <i className="fa-regular fa-clock text-[10px]" /> {duration}
+                </p>
+                <p className="mt-1 line-clamp-1 text-[11px] font-normal text-slate-500">
+                  <i className="fa-solid fa-route mr-1 text-[10px]" /> {route}
+                </p>
+                <div className="mt-2 flex items-center justify-between gap-2">
+                  <b className="text-[13px] font-semibold text-slate-950">{price}</b>
+                  <span className={`rounded-lg ${activeTheme.light} px-2.5 py-1 text-[10px] font-medium ${activeTheme.text}`}>View</span>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function FooterCol({ title, links }) {
+  return <div><h3 className="mb-4 text-[15px] font-semibold">{title}</h3><ul className="space-y-2">{links.map((link) => <li key={link}><a href="#" className="text-[13px] font-normal text-slate-600 hover:text-slate-950">{link}</a></li>)}</ul></div>;
+}
+
+function Footer({ activeTheme }) {
+  return (
+    <footer className="mt-4 border-t border-slate-200 bg-gradient-to-b from-slate-100 to-slate-200 text-slate-800">
+      <div className="mx-auto grid max-w-[1380px] gap-6 px-5 py-6 md:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_1fr_1fr_1.35fr]">
+        <div><a href="#" className="mb-4 flex items-center gap-2"><span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-orange-500 via-sky-500 to-indigo-600">📍</span><span className="leading-[0.95]"><b className="block text-[17px] font-semibold">Must India</b><b className="block text-[17px] font-semibold">Travel</b></span></a><p className="max-w-[270px] text-[13px] leading-6 text-slate-600">Your trusted travel partner for exploring the incredible beauty of India. We create unforgettable memories that last a lifetime.</p><div className="mt-5 flex gap-3">{["f", "ig", "yt", "x", "p"].map((s) => <a key={s} href="#" className="grid h-8 w-8 place-items-center rounded-full bg-slate-300/70 text-[13px] text-slate-700 hover:bg-slate-400/70">{s}</a>)}</div></div>
+        <FooterCol title="Top Destinations" links={["Kashmir Tours", "Kerala Tours", "Rajasthan Tours", "Himachal Tours", "Goa Tours", "Uttarakhand Tours", "North East Tours", "Wildlife Tours"]} />
+        <FooterCol title="Travel Themes" links={["Honeymoon Packages", "Family Holidays", "Adventure Tours", "Pilgrimage Tours", "Luxury Tours", "Group Tours", "Weekend Getaways", "Beach Holidays"]} />
+        <FooterCol title="Quick Links" links={["About Us", "Why Choose Us", "Travel Guide", "Blog", "Terms & Conditions", "Privacy Policy", "Refund Policy", "Careers"]} />
+        <FooterCol title="Support" links={["Contact Us", "FAQs", "Booking Process", "Payment Options", "Cancellation Policy", "Travel Insurance", "Customer Support"]} />
+        <div><h3 className="mb-4 text-[15px] font-semibold">Subscribe Newsletter</h3><p className="mb-4 text-[13px] leading-6 text-slate-600">Get the best travel deals & offers straight to your inbox.</p><form className="flex overflow-hidden rounded-xl border border-slate-300 bg-white p-1"><input type="email" placeholder="Enter your email" className="min-w-0 flex-1 bg-transparent px-3 text-[13px] text-slate-800 outline-none placeholder:text-slate-400" /><button className={`rounded-md ${activeTheme.solid} px-4 py-3 text-[12px] font-medium text-white`}>Subscribe</button></form><div className="mt-5 flex gap-2 text-[11px] font-medium text-slate-700">{["VISA", "MC", "PayPal", "UPI"].map((p) => <span key={p} className="rounded bg-white px-2 py-1">{p}</span>)}</div></div>
+      </div>
+      <div className="border-t border-slate-300 py-5 text-center text-[12px] text-slate-600">© 2026 Must India Travel. All Rights Reserved.</div>
+    </footer>
   );
 }
 
 function ChatLeadBot({ activeTheme }) {
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState(0);
-  const [lead, setLead] = useState({ destination: "", date: "", travellers: "", budget: "", name: "", phone: "" });
-  const questions = [
-    ["destination", "Which destination are you planning?", "e.g. Golden Triangle, Kashmir, Kerala"],
-    ["date", "What is your travel date?", "e.g. 15 June 2026"],
-    ["travellers", "How many travellers?", "e.g. 2 adults, 1 child"],
-    ["budget", "Approx budget per person?", "e.g. ₹20,000"],
-    ["name", "Your name?", "Enter your full name"],
-    ["phone", "Your WhatsApp number?", "Enter mobile number"],
-  ];
-  useEffect(() => { const timer = setTimeout(() => setOpen(true), 4500); return () => clearTimeout(timer); }, []);
-  const current = questions[step];
-  const done = step >= questions.length;
-  const next = () => { if (!current || !lead[current[0]].trim()) return; setStep(step + 1); };
-  return (
-    <>
-      {!open && <button onClick={() => setOpen(true)} className={`fixed bottom-24 right-7 z-[90] rounded-full bg-gradient-to-r ${activeTheme.primary} px-5 py-4 text-[14px] font-black text-white shadow-2xl`}>💬 Plan Trip</button>}
-      {open && <div className="fixed bottom-24 right-7 z-[90] w-[360px] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl max-sm:right-4 max-sm:w-[calc(100vw-2rem)]">
-        <div className={`bg-gradient-to-r ${activeTheme.primary} p-4 text-white`}><div className="flex justify-between gap-3"><div><p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/75">Travel Assistant</p><h3 className="text-[18px] font-black">Create Your Tour Lead</h3></div><button onClick={() => setOpen(false)} className="h-8 w-8 rounded-full bg-white/15">×</button></div></div>
-        <div className="p-4">
-          <div className="mb-3 rounded-2xl bg-slate-50 p-3 text-[13px] font-semibold leading-6 text-slate-700">Hi 👋 Answer quick questions and our travel expert will contact you.</div>
-          {!done ? <div className="rounded-2xl border border-slate-200 p-3"><label className="mb-2 block text-[13px] font-black">{current[1]}</label><input value={lead[current[0]]} onChange={(e) => setLead({ ...lead, [current[0]]: e.target.value })} onKeyDown={(e) => e.key === "Enter" && next()} placeholder={current[2]} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-semibold outline-none" /><button onClick={next} className={`mt-3 w-full rounded-xl bg-gradient-to-r ${activeTheme.primary} px-4 py-3 text-[13px] font-black text-white`}>Next</button></div> : <div className="rounded-2xl bg-emerald-50 p-4"><h4 className="font-black text-emerald-700">Lead Ready ✅</h4><button onClick={() => window.open(`https://wa.me/919999999999?text=New Tour Lead:%0AName: ${lead.name}%0APhone: ${lead.phone}%0ADestination: ${lead.destination}%0ADate: ${lead.date}%0ATravellers: ${lead.travellers}%0ABudget: ${lead.budget}`, "_blank")} className="mt-3 w-full rounded-xl bg-emerald-600 px-4 py-3 text-[13px] font-black text-white">Send Lead on WhatsApp</button></div>}
-        </div>
-      </div>}
-    </>
-  );
+  useEffect(() => { const t = setTimeout(() => setOpen(true), 4500); return () => clearTimeout(t); }, []);
+  return open ? <div className="fixed bottom-5 right-4 z-[90] max-h-[82vh] w-[calc(100vw-2rem)] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 md:bottom-24 md:right-7 md:w-[360px]"><div className={`bg-gradient-to-r ${activeTheme.primary} p-4 text-white`}><div className="flex items-start justify-between gap-3"><div><p className="text-[11px] font-medium uppercase tracking-[0.18em] text-white/75">Must India Travel Assistant</p><h3 className="mt-1 text-[18px] font-semibold">Create Your Tour Plan</h3></div><button onClick={() => setOpen(false)} className="grid h-8 w-8 place-items-center rounded-full bg-white/15 text-lg">×</button></div></div><div className="p-4"><p className="rounded-2xl bg-slate-50 p-3 text-[13px] leading-6 text-slate-700">Hi 👋 Tell us your destination, date and budget. Our travel expert will contact you.</p><input placeholder="Destination" className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] outline-none" /><input placeholder="Mobile / WhatsApp Number" className="mt-3 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] outline-none" /><button className={`mt-3 w-full rounded-xl bg-gradient-to-r ${activeTheme.primary} px-4 py-3 text-[13px] font-medium text-white`}>Generate Lead</button></div></div> : <button onClick={() => setOpen(true)} className={`fixed bottom-5 right-4 z-[90] flex items-center gap-2 rounded-full bg-gradient-to-r ${activeTheme.primary} px-4 py-3 text-[12px] font-medium text-white shadow-xl md:bottom-24 md:right-7 md:px-5 md:py-4 md:text-[13px]`}><span className="grid h-8 w-8 place-items-center rounded-full bg-white/20">💬</span>Plan Trip</button>;
 }
 
-export default function TourItineraryPage() {
+export default function TourItineraryPagePreview() {
+  useEffect(() => {
+    const existing = document.getElementById("font-awesome-cdn");
+
+    if (!existing) {
+      const link = document.createElement("link");
+      link.id = "font-awesome-cdn";
+      link.rel = "stylesheet";
+      link.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css";
+      document.head.appendChild(link);
+    }
+  }, []);
+
   const [theme, setTheme] = useState("indigo");
   const activeTheme = colorThemes[theme];
-  const [activeDay, setActiveDay] = useState(0);
 
   return (
-    <main className="min-h-screen bg-white text-slate-900 antialiased">
+    <>
+      <style>{`
+        @keyframes scrollTags {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-33.33%);
+          }
+        }
+      `}</style>
+
+      <main className="min-h-screen overflow-x-hidden bg-white text-slate-700 antialiased tracking-[-0.01em]">
       <div className="fixed left-5 top-1/2 z-[80] hidden -translate-y-1/2 flex-col gap-3 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-2xl backdrop-blur lg:flex">
-        <span className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-500">Theme</span>
-        {Object.entries(colorThemes).map(([key, value]) => <button key={key} onClick={() => setTheme(key)} className={`h-10 w-10 rounded-full bg-gradient-to-br ${value.primary} transition hover:scale-110 ${theme === key ? "ring-4 ring-slate-200" : ""}`} aria-label={key} />)}
+        <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">Theme</span>
+        {Object.entries(colorThemes).map(([key, value]) => <button key={key} onClick={() => setTheme(key)} className={`h-10 w-10 rounded-full bg-gradient-to-br ${value.primary} transition hover:scale-110 ${theme === key ? "ring-4 ring-slate-200" : ""}`} />)}
       </div>
 
-      <div className="border-b border-slate-100 bg-white">
-        <div className="mx-auto flex max-w-[1360px] items-center justify-between px-5 py-2 text-[12px] font-semibold text-slate-700">
-          <div className="flex items-center gap-5"><a href="tel:18001234567" className={`${activeTheme.text} hover:opacity-80`}>☎ Toll Free: <b>1800-123-4567</b></a><span className="hidden sm:inline-flex">🎧 24/7 Support</span><a href="mailto:hello@mustindiatravel.com" className={`hidden md:inline-flex ${activeTheme.text}`}>✉ hello@mustindiatravel.com</a></div>
-          <div className="hidden items-center gap-5 md:flex"><a href="#">Offers</a><a href="#">Travel Guide</a><a href="#">Contact Us</a><a href="#">Login / Sign Up</a></div>
-        </div>
-      </div>
+      <Header activeTheme={activeTheme} />
 
-      <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-[1360px] items-center justify-between px-5 py-4">
-          <a href="#" className="flex items-center gap-2"><span className={`grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br ${activeTheme.primary} text-white shadow-lg`}>📍</span><span className="leading-[0.95]"><b className={`block text-[22px] font-black ${activeTheme.text}`}>Must India</b><b className={`block text-[22px] font-black ${activeTheme.text}`}>Travel</b></span></a>
-          <nav className="relative hidden items-center gap-8 text-[14px] font-bold text-slate-800 lg:flex">
-            <div className="group relative py-3">
-              <a href="#" className={`${activeTheme.text} hover:opacity-80`}>Explore Tours⌄</a>
-              <MegaMenu columns={tourMegaMenu} activeTheme={activeTheme} />
-            </div>
-
-            <div className="group relative py-3">
-              <a href="#" className="hover:opacity-80">Destinations⌄</a>
-              <MegaMenu columns={tourMegaMenu} activeTheme={activeTheme} />
-            </div>
-
-            <div className="group relative py-3">
-              <a href="#" className="hover:opacity-80">Themes⌄</a>
-              <MegaMenu columns={tourMegaMenu} activeTheme={activeTheme} />
-            </div>
-
-            <div className="group relative py-3">
-              <a href="#" className="hover:opacity-80">India Zones⌄</a>
-              <MegaMenu columns={tourMegaMenu} activeTheme={activeTheme} />
-            </div>
-
-            <div className="group relative py-3">
-              <a href="#" className="hover:opacity-80">Festival Tours⌄</a>
-              <MegaMenu columns={tourMegaMenu} activeTheme={activeTheme} />
-            </div>
-
-            <a href="#" className="py-3 hover:opacity-80">Top Deals</a>
-            <a href="#" className="py-3 hover:opacity-80">Blog</a>
-          </nav>
-          <a href="#enquiry" className={`rounded-lg bg-gradient-to-r ${activeTheme.primary} px-7 py-3 text-[14px] font-black text-white shadow-lg`}>Get Quote</a>
-        </div>
-      </header>
-
-      <section className="bg-gradient-to-b from-[#f8fbff] to-white pb-8 pt-6">
-        <div className="mx-auto max-w-[1360px] px-5">
-          <div className="mb-4 flex flex-wrap items-center gap-2 text-[12px] font-bold text-slate-500">
-            <a href="#" className="hover:text-slate-900">Home</a><span>/</span><a href="#" className="hover:text-slate-900">India Tour Packages</a><span>/</span><span className={activeTheme.text}>Golden Triangle Tour Itinerary</span>
-          </div>
-
-          <div className="grid gap-7 lg:grid-cols-[1.1fr_.9fr]">
-            <div className="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-              <div className="mb-5 flex flex-wrap gap-2">
-                <span className={`${activeTheme.light} ${activeTheme.text} rounded-full px-4 py-2 text-[12px] font-black`}>Best Seller</span>
-                <span className="rounded-full bg-emerald-50 px-4 py-2 text-[12px] font-black text-emerald-600">Free Cancellation</span>
-                <span className="rounded-full bg-amber-50 px-4 py-2 text-[12px] font-black text-amber-600">Part Payment Available</span>
-                <span className="rounded-full bg-slate-100 px-4 py-2 text-[12px] font-black text-slate-600">Private Tour</span>
-              </div>
-              <h1 className="max-w-4xl text-[38px] font-black leading-[1.06] tracking-[-0.04em] text-slate-950 md:text-[54px]">Golden Triangle India Tour Itinerary</h1>
-              <p className="mt-4 max-w-3xl text-[16px] font-medium leading-8 text-slate-600">A beautifully planned Delhi, Agra and Jaipur itinerary for travellers who want India’s monuments, culture, food, shopping and comfortable private transport in one perfect trip.</p>
-              <div className="mt-6 grid max-w-4xl grid-cols-2 gap-3 md:grid-cols-4">
-                {[["5 Days", "Duration", "🗓️"], ["Delhi • Agra • Jaipur", "Route", "📍"], ["Private Cab", "Transport", "🚘"], ["4.8/5", "Traveller Rating", "⭐"]].map(([a, b, icon]) => (
-                  <div key={b} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:bg-white hover:shadow-md">
-                    <span className="mb-2 block text-xl">{icon}</span><b className="block text-[16px] font-black text-slate-950">{a}</b><span className="text-[12px] font-bold text-slate-500">{b}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-7 flex flex-wrap gap-3"><a href="#itinerary" className={`rounded-2xl bg-gradient-to-r ${activeTheme.primary} px-6 py-4 text-[13px] font-black text-white shadow-lg`}>View Day Plan</a><a href="#enquiry" className="rounded-2xl border border-slate-200 bg-white px-6 py-4 text-[13px] font-black text-slate-700 hover:bg-slate-50">Get Custom Quote</a></div>
-            </div>
-            <div className="relative h-[430px] overflow-hidden rounded-[32px] bg-slate-900 shadow-2xl">
-              <img src={`${imageBase}/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=1200&q=80`} alt="Golden Triangle India Tour" className="h-full w-full object-cover opacity-90" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/15 to-transparent" />
-              <div className="absolute left-5 top-5 rounded-2xl bg-white/90 px-4 py-3 backdrop-blur"><p className="text-[11px] font-black uppercase tracking-[0.16em] text-slate-500">Starting Price</p><b className="text-[22px] font-black text-slate-950">₹18,999</b><span className="text-[12px] font-bold text-slate-500"> / person</span></div>
-              <div className="absolute bottom-5 left-5 right-5 text-white"><p className="text-[12px] font-black uppercase tracking-[0.18em] text-white/75">Signature India Route</p><h2 className="mt-1 text-[28px] font-black">Delhi • Agra • Jaipur</h2><div className="mt-4 flex flex-wrap gap-2">{routeStops.map((stop, index) => <span key={`${stop}-${index}`} className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-black backdrop-blur">{index + 1}. {stop}</span>)}</div></div>
-            </div>
-          </div>
-          <div className="mt-6 rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="grid gap-3 md:grid-cols-5">{routeStops.map((stop, index) => (<div key={`${stop}-route`} className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3"><span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${activeTheme.primary} text-[12px] font-black text-white`}>{index + 1}</span><div><b className="block text-[13px] font-black text-slate-950">{stop}</b><small className="text-[11px] font-bold text-slate-500">Route stop</small></div></div>))}</div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto grid max-w-[1360px] gap-7 px-5 py-8 lg:grid-cols-[1fr_380px]">
-        <div>
-          <section className="mb-8 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-            <div className="mb-5 flex items-center justify-between gap-4 border-b border-slate-100 pb-4 max-sm:flex-col max-sm:items-start">
-              <div><p className={`mb-1 text-[11px] font-black uppercase tracking-[0.18em] ${activeTheme.text}`}>Tour Highlights</p><h2 className="text-[28px] font-black tracking-[-0.04em] text-slate-950">Why Travellers Choose This Tour</h2></div>
-              <div className="flex flex-wrap gap-2"><a href="#enquiry" className={`rounded-xl bg-gradient-to-r ${activeTheme.primary} px-5 py-3 text-[12px] font-black text-white shadow-lg`}>Customize Tour</a><a href="https://wa.me/919999999999" className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-[12px] font-black text-slate-700 hover:bg-slate-50">WhatsApp Expert</a></div>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {tourHighlights.map(([title, desc, icon]) => (<div key={title} className="flex items-start gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-slate-200 hover:bg-white hover:shadow-md"><div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br ${activeTheme.primary} text-sm text-white shadow-md`}>{icon}</div><div><h3 className="text-[13px] font-black leading-5 text-slate-900">{title}</h3><p className="mt-1 text-[11px] font-semibold leading-5 text-slate-500">{desc}</p></div></div>))}
-            </div>
-          </section>
-
-          <div id="itinerary" />
-          <SectionTitle eyebrow="Day wise plan" title="Your Complete 5-Day Tour Itinerary" text="Each day is structured for comfortable travel, sightseeing, local experience and enough flexibility for custom changes." activeTheme={activeTheme} />
-          <div className="space-y-5">
-            {itineraryDays.map((item, index) => (
-              <article key={item.day} className={`overflow-hidden rounded-3xl border bg-white shadow-sm transition hover:shadow-xl ${activeDay === index ? activeTheme.border : 'border-slate-200'}`}>
-                <button onClick={() => setActiveDay(activeDay === index ? -1 : index)} className="flex w-full flex-col gap-4 p-4 text-left md:flex-row">
-                  <div className="relative shrink-0 overflow-hidden rounded-2xl md:w-64">
-                    <img src={item.image} alt={item.title} className="h-44 w-full object-cover transition duration-500 hover:scale-105" />
-                    <span className={`absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1 text-[11px] font-black ${activeTheme.text} backdrop-blur`}>{item.day}</span>
-                  </div>
-                  <span className="flex-1 py-1">
-                    <div className="flex items-start justify-between gap-4"><h3 className="text-[24px] font-black tracking-[-0.03em] text-slate-950">{item.title}</h3><span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${activeTheme.light} text-[13px] font-black ${activeTheme.text}`}>{activeDay === index ? '−' : '+'}</span></div>
-                    <p className="mt-2 text-[14px] font-medium leading-7 text-slate-600">{item.details}</p>
-                    <span className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-4">{[["📍", item.location], ["🍽️", item.meals], ["🏨", item.stay], ["🚗", item.drive]].map(([icon, text]) => <small key={text} className="rounded-xl bg-slate-50 px-3 py-2 text-[12px] font-bold text-slate-600">{icon} {text}</small>)}</span>
-                  </span>
-                </button>
-              </article>
-            ))}
-          </div>
-
-          <section className="mt-10"><SectionTitle eyebrow="Stay options" title="Suggested Hotels for This Tour" text="Hotel category can be changed to budget, 3-star, 4-star, 5-star or luxury heritage as per your requirement." activeTheme={activeTheme} /><div className="grid gap-5 md:grid-cols-3">{hotels.map(([city, name, type, img]) => <article key={city} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><img src={img} alt={name} className="h-40 w-full object-cover" /><div className="p-4"><span className={`text-[12px] font-black ${activeTheme.text}`}>{city}</span><h3 className="mt-1 text-[16px] font-black">{name}</h3><p className="mt-1 text-[13px] font-semibold text-slate-500">{type} • Breakfast Included</p></div></article>)}</div></section>
-
-          <section className="mt-10"><SectionTitle eyebrow="Gallery" title="Tour Gallery & Travel Moments" text="A visual preview of the monuments, culture and experiences covered in this route." activeTheme={activeTheme} /><div className="grid grid-cols-2 gap-3 md:grid-cols-3">{gallery.map((img, i) => <div key={img} className={`overflow-hidden rounded-2xl ${i === 0 ? 'md:col-span-2 md:row-span-2' : ''}`}><img src={img} alt="Tour gallery" className={`${i === 0 ? 'h-[330px]' : 'h-40'} w-full object-cover transition hover:scale-105`} /></div>)}</div></section>
-
-          <section className="mt-10 grid gap-5 md:grid-cols-2">
-            <div className="rounded-3xl border border-emerald-100 bg-white p-6 shadow-sm"><div className="mb-4 flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-emerald-50 text-xl text-emerald-600">✓</span><h2 className="text-[24px] font-black text-emerald-700">Tour Inclusions</h2></div><ul className="space-y-3">{inclusions.map((x) => <li key={x} className="flex gap-3 text-[14px] font-bold leading-6 text-slate-700"><span className="mt-0.5 text-emerald-600">✓</span>{x}</li>)}</ul></div>
-            <div className="rounded-3xl border border-rose-100 bg-white p-6 shadow-sm"><div className="mb-4 flex items-center gap-3"><span className="grid h-11 w-11 place-items-center rounded-2xl bg-rose-50 text-xl text-rose-600">×</span><h2 className="text-[24px] font-black text-rose-700">Tour Exclusions</h2></div><ul className="space-y-3">{exclusions.map((x) => <li key={x} className="flex gap-3 text-[14px] font-bold leading-6 text-slate-700"><span className="mt-0.5 text-rose-600">×</span>{x}</li>)}</ul></div>
-          </section>
-
-          <section className="mt-10"><SectionTitle eyebrow="Reviews" title="Guest Reviews from Recent Golden Triangle Travellers" text="Real-style review cards designed to increase trust and help visitors take faster enquiry action." activeTheme={activeTheme} />
-            <div className="grid gap-5 md:grid-cols-3">
-              {reviews.map(([name, city, text, rating, img]) => (
-                <article key={name} className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="mb-4 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3"><img src={img} alt={name} className="h-12 w-12 rounded-full object-cover" /><div><h3 className="text-[14px] font-black text-slate-950">{name}</h3><p className="text-[12px] font-bold text-slate-500">{city}</p></div></div>
-                    <span className="rounded-full bg-amber-50 px-3 py-1 text-[12px] font-black text-amber-600">★ {rating}</span>
-                  </div>
-                  <p className="text-[13px] font-medium leading-6 text-slate-600">“{text}”</p>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="mt-10"><SectionTitle eyebrow="Travel blog" title="Latest Travel Guides for This Route" text="Helpful travel articles that support SEO, answer user questions and improve internal linking for package pages." activeTheme={activeTheme} />
-            <div className="grid gap-5 md:grid-cols-3">
-              {blogs.map(([title, text, read, img]) => (
-                <article key={title} className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-                  <img src={img} alt={title} className="h-44 w-full object-cover" />
-                  <div className="p-5"><span className={`text-[12px] font-black ${activeTheme.text}`}>{read}</span><h3 className="mt-2 text-[18px] font-black leading-snug text-slate-950">{title}</h3><p className="mt-2 text-[13px] font-medium leading-6 text-slate-600">{text}</p><a href="#" className={`mt-4 inline-flex text-[13px] font-black ${activeTheme.text}`}>Read Blog →</a></div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="mt-10"><SectionTitle eyebrow="Terms" title="Important Terms & Conditions" text="Clear booking terms help travellers understand pricing, inclusions and travel responsibilities before confirmation." activeTheme={activeTheme} />
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <ul className="space-y-3">
-                {terms.map((term) => <li key={term} className="flex gap-3 text-[13px] font-semibold leading-6 text-slate-700"><span className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full ${activeTheme.light} text-[11px] ${activeTheme.text}`}>i</span>{term}</li>)}
-              </ul>
-            </div>
-          </section>
-
-          <section className="mt-10"><SectionTitle eyebrow="Questions" title="Frequently Asked Questions" text="Clear answers before you book your India tour package." activeTheme={activeTheme} /><div className="grid gap-4 md:grid-cols-2">{faqs.map(([q, a]) => <details key={q} className="rounded-2xl border border-slate-200 bg-white p-4"><summary className="cursor-pointer text-[14px] font-black text-slate-950">{q}</summary><p className="mt-3 text-[13px] font-medium leading-6 text-slate-600">{a}</p></details>)}</div></section>
-        </div>
-
-        <aside className="lg:sticky lg:top-24 lg:self-start" id="enquiry">
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
-            <div className={`bg-gradient-to-r ${activeTheme.primary} p-5 text-white`}><p className="text-[12px] font-black uppercase tracking-[0.18em] text-white/75">Instant Quote</p><h2 className="mt-1 text-[24px] font-black">Customize This Tour</h2><p className="mt-2 text-[13px] font-semibold text-white/85">Get best price with hotel, cab and sightseeing customization.</p></div>
-            <div className="border-b border-slate-100 bg-slate-50 px-5 py-3 text-[12px] font-bold text-slate-600">Usually replies within <b className={activeTheme.text}>10 minutes</b></div>
-            <form className="space-y-3 p-5">
-              <input placeholder="Full Name" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-semibold outline-none focus:border-slate-400 focus:bg-white" />
-              <input placeholder="Mobile / WhatsApp Number" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-semibold outline-none focus:border-slate-400 focus:bg-white" />
-              <div className="grid grid-cols-2 gap-3"><input placeholder="Travel Date" type="date" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-semibold outline-none focus:border-slate-400 focus:bg-white" /><select className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-semibold outline-none focus:border-slate-400 focus:bg-white"><option>2 Travellers</option><option>Family with Kids</option><option>Group Tour</option></select></div>
-              <textarea placeholder="Tell us your hotel category, budget or special request" rows={4} className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-[13px] font-semibold outline-none focus:border-slate-400 focus:bg-white" />
-              <button type="button" className={`w-full rounded-xl bg-gradient-to-r ${activeTheme.primary} px-5 py-4 text-[14px] font-black text-white shadow-lg`}>Send Enquiry</button>
-              <a href="https://wa.me/919999999999" className="block w-full rounded-xl bg-emerald-600 px-5 py-4 text-center text-[14px] font-black text-white">Chat on WhatsApp</a>
-            </form>
-          </div>
-          <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><h3 className="text-[20px] font-black">Package Price</h3><p className="mt-2 text-[13px] font-semibold text-slate-500">Starting from</p><div className="mt-1 text-[32px] font-black text-slate-950">₹18,999 <span className="text-[13px] text-slate-500">/ person</span></div><div className="mt-4 rounded-2xl bg-emerald-50 p-3 text-[12px] font-bold text-emerald-700">Save more with early booking and group travellers.</div><ul className="mt-4 space-y-2 text-[13px] font-bold text-slate-600"><li>✓ Private cab included</li><li>✓ Hotel with breakfast</li><li>✓ No hidden charges</li><li>✓ Customizable itinerary</li></ul></div>
-          <div className="mt-5 grid gap-3 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><h3 className="text-[20px] font-black">Need Help Now?</h3><a href="tel:18001234567" className={`rounded-xl border ${activeTheme.border} ${activeTheme.light} px-4 py-3 text-center text-[14px] font-black ${activeTheme.text}`}>☎ Call: 1800-123-4567</a><a href="https://wa.me/919999999999" className="rounded-xl bg-emerald-600 px-4 py-3 text-center text-[14px] font-black text-white">💬 WhatsApp: +91 99999 99999</a><p className="text-center text-[12px] font-semibold text-slate-500">Get itinerary, hotel options and latest price instantly.</p></div>
-          <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"><h3 className="text-[18px] font-black">Why Book with Us?</h3><div className="mt-4 space-y-3">{['Verified hotels', 'Experienced drivers', 'Flexible payment', 'Live trip support'].map((x) => <div key={x} className="flex items-center gap-3 text-[13px] font-bold text-slate-600"><span className={`grid h-7 w-7 place-items-center rounded-lg ${activeTheme.light} ${activeTheme.text}`}>✓</span>{x}</div>)}</div></div>
-        </aside>
-      </section>
-
-      <ChatLeadBot activeTheme={activeTheme} />
-      <footer className="mt-8 bg-[#0b1a36] text-white">
-        <div className="mx-auto max-w-[1360px] px-5 py-14">
-          <div className="grid gap-10 lg:grid-cols-[1.2fr_.9fr_.9fr_.9fr_1.1fr]">
+      <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,#eef2ff_0%,#ffffff_38%,#f8fafc_100%)] py-8 md:py-12">
+        <div className="mx-auto max-w-[1380px] px-5">
+          <div className="grid gap-7 lg:grid-cols-[1.05fr_.95fr] lg:items-center">
             <div>
-              <div className="flex items-center gap-3">
-                <span className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${activeTheme.primary} text-xl text-white shadow-xl`}>
-                  📍
-                </span>
-                <div>
-                  <h3 className="text-[24px] font-black">Must India Travel</h3>
-                  <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-slate-400">India Tour Portal</p>
+              <nav className="mb-5 flex flex-wrap items-center gap-2 text-[12px] text-slate-500"><a href="#" className="inline-flex items-center gap-1.5"><i className="fa-solid fa-house text-[11px]" />Home</a><span>/</span><a href="#" className="inline-flex items-center gap-1.5"><i className="fa-solid fa-suitcase-rolling text-[11px]" />India Tour Packages</a><span>/</span><span className="inline-flex items-center gap-1.5 text-slate-800"><i className="fa-solid fa-location-dot text-[11px]" />Golden Triangle Tour</span></nav>
+              <p className={`text-[12px] font-medium uppercase tracking-[0.24em] ${activeTheme.text}`}>Private India Tour Itinerary</p>
+              <h1 className="mt-4 max-w-[720px] text-[40px] font-semibold leading-[1.05] tracking-[-0.06em] text-slate-950 md:text-[58px]">Golden Triangle India Tour Package</h1>
+              <p className="mt-5 max-w-[690px] text-[16px] font-normal leading-8 text-slate-600">Explore Delhi, Agra and Jaipur with a private cab, comfortable hotels, guided sightseeing and flexible trip planning. This itinerary is designed for families, couples and first-time India travellers who want a smooth, premium and memorable journey.</p>
+              <div className="mt-7 flex flex-wrap gap-3"><a href="#enquiry" className={`rounded-full bg-gradient-to-r ${activeTheme.primary} px-6 py-3.5 text-[13px] font-medium text-white shadow-lg`}><i className="fa-solid fa-calendar-check mr-2" />Book This Tour</a><a href="#itinerary" className="rounded-full border border-slate-200 bg-white px-6 py-3.5 text-[13px] font-medium text-slate-700 shadow-sm"><i className="fa-solid fa-list-check mr-2" />View Day Wise Plan</a></div>
+
+              <div className="mt-7 overflow-hidden rounded-[30px] border border-slate-200 bg-white/90 shadow-[0_12px_40px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+                <div className="grid gap-0 lg:grid-cols-[1.15fr_.85fr]">
+                  <div className="border-b border-slate-200 p-5 lg:border-b-0 lg:border-r lg:p-6">
+                    <div className="flex items-center gap-3">
+                      <span className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-r ${activeTheme.primary} text-white shadow-lg`}>
+                        <i className="fa-solid fa-award text-[18px]" />
+                      </span>
+                      <div>
+                        <p className={`text-[11px] font-medium uppercase tracking-[0.22em] ${activeTheme.text}`}>Why Travellers Book This Tour</p>
+                        <h3 className="mt-1 text-[22px] font-semibold tracking-[-0.03em] text-slate-950">Premium Golden Triangle Experience</h3>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                      {[
+                        ["Private AC Cab", "fa-car-side"],
+                        ["Handpicked Hotels", "fa-hotel"],
+                        ["Taj Mahal Sunrise", "fa-camera-retro"],
+                        ["Flexible Itinerary", "fa-route"],
+                      ].map(([text, icon]) => (
+                        <div key={text} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-200 bg-white text-slate-500 shadow-sm">
+                            <i className={`fa-solid ${icon} text-[13px]`} />
+                          </span>
+                          <span className="text-[13px] font-medium text-slate-700">{text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-5 lg:p-6">
+                    <div className="rounded-3xl bg-slate-50 p-5">
+                      <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-4">
+                        <div>
+                          <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">Starting Price</p>
+                          <h3 className="mt-1 text-[32px] font-semibold tracking-[-0.05em] text-slate-950">₹18,999</h3>
+                          <p className="text-[12px] text-slate-500">Per person • Minimum 2 travellers</p>
+                        </div>
+                        <span className={`rounded-2xl bg-gradient-to-r ${activeTheme.primary} px-3 py-2 text-[11px] font-medium text-white shadow-lg`}>
+                          Best Seller
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                ["Taj Mahal, Agra", "Sunrise marble monument experience", `${imageBase}/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=700&q=80`, "col-span-2 h-[260px] md:h-[320px]"],
+                ["Hawa Mahal, Jaipur", "Royal pink city heritage", `${imageBase}/photo-1477587458883-47145ed94245?auto=format&fit=crop&w=600&q=80`, "h-[170px] md:h-[210px]"],
+                ["Delhi Heritage", "Capital city monuments and culture", `${imageBase}/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=600&q=80`, "h-[170px] md:h-[210px]"],
+              ].map(([title, desc, image, size]) => (
+                <a key={title} href="#" className={`group relative overflow-hidden rounded-[26px] bg-slate-900 shadow-[0_16px_45px_rgba(15,23,42,0.12)] ${size}`}>
+                  <img src={image} alt={title} className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-slate-950/10 to-transparent" />
+                  <div className="absolute bottom-0 left-0 p-4 text-white md:p-5">
+                    <span className="mb-2 inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium backdrop-blur">
+                      Golden Triangle Highlight
+                    </span>
+                    <h3 className="text-[18px] font-semibold leading-tight md:text-[22px]">{title}</h3>
+                    <p className="mt-1 text-[12px] font-normal leading-5 text-white/80 md:text-[13px]">{desc}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
-              <p className="mt-5 max-w-sm text-[13px] font-medium leading-7 text-slate-300">
-                SEO-optimized India travel portal with customized tour packages, luxury holidays, pilgrimage tours, wildlife safaris and private transport services.
-              </p>
+      <SectionScrollNav activeTheme={activeTheme} />
 
-              <div className="mt-6 flex gap-3">
-                {['FB','IG','YT','WA'].map((x) => (
-                  <a key={x} href="#" className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-[12px] font-black transition hover:bg-white/20">
-                    {x}
+      <section className="mx-auto max-w-[1380px] px-4 py-5 md:px-5 md:py-7">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-6">
+          {overview.map(([label, value, icon]) => (
+            <div
+              key={label}
+              className="rounded-[22px] border border-slate-200 bg-white p-3 shadow-[0_8px_24px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(15,23,42,0.07)] md:rounded-2xl md:p-4"
+            >
+              <div className="flex flex-col items-start md:block">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-500 shadow-sm md:h-11 md:w-11">
+                  <i className={`fa-solid ${icon} text-[15px] md:text-[17px]`} />
+                </span>
+
+                <div className="mt-3 min-w-0 w-full">
+                  <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-slate-400 md:text-[11px] md:tracking-[0.14em]">
+                    {label}
+                  </p>
+
+                  <h3 className="mt-1 text-[14px] leading-5 font-semibold text-slate-950 break-words md:text-[14px] md:leading-6">
+                    {value}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-[1380px] gap-7 px-5 py-6 lg:grid-cols-[1fr_380px]">
+        <div className="space-y-7">
+          <section id="tour-overview" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7">
+            <SectionTitle title="Tour Overview" subtitle="Complete trip summary" activeTheme={activeTheme} icon="fa-map-location-dot" />
+            <p className="text-[15px] font-normal leading-8 text-slate-600">This Golden Triangle tour covers three iconic cities of North India: Delhi, Agra and Jaipur. The route combines Mughal monuments, royal palaces, cultural bazaars, local food, photography points and comfortable private transfers. The itinerary is fully customizable with hotel category, guide service, arrival date and number of travellers.</p>
+          </section>
+
+          <section id="tour-highlights" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7">
+            <SectionTitle title="Tour Highlights" subtitle="Why travellers love it" activeTheme={activeTheme} icon="fa-medal" />
+            <div className="grid gap-3 md:grid-cols-2">
+              {highlights.map(([text, icon]) => (
+                <div key={text} className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:bg-white hover:shadow-sm">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-slate-200 bg-white text-slate-500 shadow-sm">
+                    <i className={`fa-solid ${icon} text-[14px]`} />
+                  </span>
+                  <p className="text-[13px] leading-6 text-slate-700">{text}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section id="itinerary" className="rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7">
+            <SectionTitle title="Day Wise Itinerary" subtitle="Detailed paragraph wise plan" activeTheme={activeTheme} icon="fa-timeline" />
+            <div className="space-y-5">
+              {itinerary.map((item) => (
+                <article key={item.day} className="relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md md:p-6">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className={`inline-flex items-center gap-2 rounded-full bg-gradient-to-r ${activeTheme.primary} px-4 py-2 text-[12px] font-medium text-white`}>
+                      <i className="fa-solid fa-location-dot text-[11px]" />
+                      {item.day}
+                    </span>
+
+                    <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-slate-950">
+                      {item.title}
+                    </h3>
+                  </div>
+
+                  <p className="mt-4 text-[14px] font-normal leading-8 text-slate-600">
+                    {item.text}
+                  </p>
+
+                  <div className="mt-4 flex flex-wrap gap-2.5">
+                    <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[12px] text-slate-700 shadow-sm">
+                      <span className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500">
+                        <i className="fa-solid fa-hotel text-[11px]" />
+                      </span>
+                      <div className="leading-tight">
+                        <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400">Stay</p>
+                        <b className="block text-[12px] font-semibold text-slate-900">{item.stay}</b>
+                      </div>
+                    </div>
+
+                    <div className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[12px] text-slate-700 shadow-sm">
+                      <span className="grid h-8 w-8 place-items-center rounded-lg border border-slate-200 bg-white text-slate-500">
+                        <i className="fa-solid fa-utensils text-[11px]" />
+                      </span>
+                      <div className="leading-tight">
+                        <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400">Meal</p>
+                        <b className="block text-[12px] font-semibold text-slate-900">{item.meal}</b>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-5 md:grid-cols-2">
+            <div id="inclusions" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7"><SectionTitle title="Inclusions" subtitle="Included services" activeTheme={activeTheme} icon="fa-circle-check" /><ul className="space-y-3">{inclusions.map((x) => <li key={x} className="flex gap-3 text-[14px] text-slate-600"><i className="fa-solid fa-circle-check mt-1 text-emerald-500" />{x}</li>)}</ul></div>
+            <div id="exclusions" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7"><SectionTitle title="Exclusions" subtitle="Not included" activeTheme={activeTheme} icon="fa-circle-xmark" /><ul className="space-y-3">{exclusions.map((x) => <li key={x} className="flex gap-3 text-[14px] text-slate-600"><i className="fa-solid fa-circle-xmark mt-1 text-rose-500" />{x}</li>)}</ul></div>
+          </section>
+
+          <section className="grid gap-5 md:grid-cols-2">
+            <div id="important-notes" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7"><SectionTitle title="Important Notes" subtitle="Before booking" activeTheme={activeTheme} icon="fa-circle-info" /><ul className="space-y-3">{notes.map((x) => <li key={x} className="flex gap-3 text-[14px] leading-7 text-slate-600"><i className="fa-solid fa-circle-info mt-1 text-slate-500" />{x}</li>)}</ul></div>
+            <div id="terms-conditions" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7"><SectionTitle title="Terms & Conditions" subtitle="Booking rules" activeTheme={activeTheme} icon="fa-file-contract" /><ul className="space-y-3">{terms.map((x) => <li key={x} className="flex gap-3 text-[14px] leading-7 text-slate-600"><i className="fa-solid fa-file-contract mt-1 text-slate-500" />{x}</li>)}</ul></div>
+          </section>
+
+          <section id="traveller-gallery" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7"><SectionTitle title="Traveller Gallery" subtitle="Real trip moments" activeTheme={activeTheme} icon="fa-images" /><div className="grid grid-cols-2 gap-3 md:grid-cols-3">{gallery.map((img) => <div key={img} className="h-40 overflow-hidden rounded-2xl"><img src={img} alt="Golden Triangle tour gallery" className="h-full w-full object-cover transition hover:scale-105" /></div>)}</div></section>
+
+          <section id="traveller-reels" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7"><SectionTitle title="Traveller Reels" subtitle="Short video moments" activeTheme={activeTheme} icon="fa-video" /><div className="grid grid-cols-2 gap-3 md:grid-cols-4">{gallery.slice(0,4).map((img, i) => <a href="#" key={img} className="relative h-52 overflow-hidden rounded-2xl bg-slate-900"><img src={img} alt="Travel reel" className="h-full w-full object-cover opacity-75" /><span className="absolute left-1/2 top-1/2 grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/60 bg-black/30 text-white backdrop-blur"><i className="fa-solid fa-play text-[13px]" /></span><span className="absolute bottom-3 left-3 rounded-full bg-black/35 px-2 py-1 text-[11px] font-medium text-white">{["12.4K", "8.7K", "15.2K", "10.1K"][i]}</span></a>)}</div></section>
+
+          <section id="traveller-reviews" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7"><SectionTitle title="Traveller Reviews" subtitle="Guest experiences" activeTheme={activeTheme} icon="fa-star-half-stroke" /><div className="grid gap-4 md:grid-cols-3">{reviews.map(([name, city, text]) => <article key={name} className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="flex items-center justify-between gap-3"><div><h3 className="text-[14px] font-semibold text-slate-950">{name}</h3><p className="text-[12px] text-slate-500">{city}</p></div><span className="inline-flex gap-0.5 text-[11px] text-amber-400"><i className="fa-solid fa-star" /><i className="fa-solid fa-star" /><i className="fa-solid fa-star" /><i className="fa-solid fa-star" /><i className="fa-solid fa-star" /></span></div><p className="mt-3 text-[13px] leading-7 text-slate-600">“{text}”</p></article>)}</div></section>
+
+          <section id="similar-tours" className="scroll-mt-28 rounded-[30px] border border-slate-200 bg-white p-5 shadow-sm md:p-7"><SectionTitle title="Similar Tours" subtitle="You may also like" activeTheme={activeTheme} icon="fa-compass" /><div className="grid gap-4 md:grid-cols-3">{similarTours.map(([title, duration, price, img]) => <article key={title} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><img src={img} alt={title} className="h-40 w-full object-cover" /><div className="p-4"><h3 className="text-[13px] font-semibold text-slate-950">{title}</h3><p className="mt-1 text-[12px] text-slate-500">{duration}</p><div className="mt-3 flex items-center justify-between"><b className="text-[16px] font-semibold text-slate-950">{price}</b><span className={`rounded-lg ${activeTheme.light} px-3 py-2 text-[12px] font-medium ${activeTheme.text}`}>View</span></div></div></article>)}</div></section>
+        </div>
+
+        <EnquirySidebar activeTheme={activeTheme} />
+      </section>
+
+      <section id="more-india-tours" className="mx-auto max-w-[1380px] scroll-mt-28 px-5 py-7">
+        <div className="rounded-[30px] border border-slate-200 bg-white p-5 shadow-[0_12px_38px_rgba(15,23,42,0.05)] md:p-7">
+          <SectionTitle title="Explore More India Tours" subtitle="Internal travel links" activeTheme={activeTheme} icon="fa-link" />
+
+          <div className="grid gap-5 lg:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <h3 className="flex items-center gap-2 text-[16px] font-semibold text-slate-950">
+                <i className="fa-solid fa-location-dot text-slate-500" /> Popular Destinations
+              </h3>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {["Delhi Tours", "Agra Tours", "Jaipur Tours", "Varanasi Tours", "Rishikesh Tours", "Kerala Tours", "Kashmir Tours", "Goa Tours"].map((item) => (
+                  <a key={item} href="#" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-[12px] font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-950">
+                    {item}
                   </a>
                 ))}
               </div>
             </div>
 
-            <div>
-              <h3 className="mb-4 text-[15px] font-black">Top Destinations</h3>
-              {['Kashmir','Kerala','Rajasthan','Goa','Varanasi','Leh Ladakh'].map((x) => (
-                <a key={x} href="#" className="block py-2 text-[13px] font-medium text-slate-300 hover:text-white">
-                  {x}
-                </a>
-              ))}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <h3 className="flex items-center gap-2 text-[16px] font-semibold text-slate-950">
+                <i className="fa-solid fa-suitcase-rolling text-slate-500" /> Related Tour Packages
+              </h3>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {["Golden Triangle Tour", "Delhi Agra Jaipur Tour", "Golden Triangle with Varanasi", "Rajasthan Heritage Tour", "North India Tour", "Luxury India Tour", "Family India Tour", "Private Cab Tour"].map((item) => (
+                  <a key={item} href="#" className={`rounded-full border ${activeTheme.border} bg-white px-4 py-2 text-[12px] font-medium ${activeTheme.text} transition hover:opacity-80`}>
+                    {item}
+                  </a>
+                ))}
+              </div>
             </div>
 
-            <div>
-              <h3 className="mb-4 text-[15px] font-black">Travel Themes</h3>
-              {['Family Tours','Honeymoon Tours','Wildlife Tours','Pilgrimage Tours','Luxury Tours','Adventure Tours'].map((x) => (
-                <a key={x} href="#" className="block py-2 text-[13px] font-medium text-slate-300 hover:text-white">
-                  {x}
-                </a>
-              ))}
-            </div>
-
-            <div>
-              <h3 className="mb-4 text-[15px] font-black">Quick Links</h3>
-              {['About Us','Contact Us','Travel Blog','FAQ','Terms & Conditions','Privacy Policy'].map((x) => (
-                <a key={x} href="#" className="block py-2 text-[13px] font-medium text-slate-300 hover:text-white">
-                  {x}
-                </a>
-              ))}
-            </div>
-
-            <div>
-              <h3 className="mb-4 text-[15px] font-black">Need Help Planning?</h3>
-
-              <div className="space-y-3">
-                <a href="tel:18001234567" className="flex items-center gap-3 rounded-2xl bg-white/5 p-4 transition hover:bg-white/10">
-                  <span className="text-lg">📞</span>
-                  <span>
-                    <b className="block text-[13px] font-black">Call Us</b>
-                    <small className="text-[12px] font-semibold text-slate-400">1800-123-4567</small>
-                  </span>
-                </a>
-
-                <a href="https://wa.me/919999999999" className="flex items-center gap-3 rounded-2xl bg-emerald-600 p-4 transition hover:bg-emerald-500">
-                  <span className="text-lg">💬</span>
-                  <span>
-                    <b className="block text-[13px] font-black">WhatsApp Expert</b>
-                    <small className="text-[12px] font-semibold text-white/80">Instant Tour Assistance</small>
-                  </span>
-                </a>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <h3 className="flex items-center gap-2 text-[16px] font-semibold text-slate-950">
+                <i className="fa-solid fa-tags text-slate-500" /> Travel Themes
+              </h3>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {["Honeymoon Tours", "Pilgrimage Tours", "Wildlife Safari", "Hill Station Tours", "Weekend Trips", "Festival Tours", "Group Tours", "Custom Tour Packages"].map((item) => (
+                  <a key={item} href="#" className="rounded-full border border-slate-200 bg-white px-4 py-2 text-[12px] font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-950">
+                    #{item}
+                  </a>
+                ))}
               </div>
             </div>
           </div>
-
-          <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-5 text-[12px] font-semibold text-slate-400 md:flex-row">
-            <p>© 2026 Must India Travel. All Rights Reserved.</p>
-            <p>Built with latest 2026 SEO & Core Web Vitals optimization.</p>
-          </div>
         </div>
-      </footer>
+      </section>
+
+      <ChatLeadBot activeTheme={activeTheme} />
+      <Footer activeTheme={activeTheme} />
     </main>
+    </>
   );
 }
